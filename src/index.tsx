@@ -2,6 +2,7 @@ import { html } from "@elysiajs/html";
 import { eq } from "drizzle-orm";
 import { Elysia, t } from "elysia";
 import * as elements from "typed-html";
+import { BaseHtml } from "./BaseHtml";
 import { db } from "./db";
 import { Todo, todos } from "./db/schema";
 
@@ -72,27 +73,11 @@ const app = new Elysia()
             }),
         }
     )
-    .listen({ hostname: "0.0.0.0", port: 3000 });
+    .listen({ port: 3000 });
 
 console.log(
     `🦊 Elysia is running at http://${app.server?.hostname}:${app.server?.port}`
 );
-
-const BaseHtml = ({ children }: elements.Children) => `
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>THE BETH STACK</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/htmx.org@1.9.3"></script>
-  <script src="https://unpkg.com/hyperscript.org@0.9.9"></script>
-</head>
-
-${children}
-`;
 
 function TodoItem({ content, completed, id }: Todo) {
     return (
