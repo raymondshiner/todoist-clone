@@ -17,14 +17,13 @@ export function TodoItem({ content, completed, id }: Todo) {
                     } group-hover/icon:opacity-100 transition-opacity duration-300`}
                 />
             </span>
-
             <p>{content}</p>
             <i
                 class="fa-solid fa-trash text-red-400 ml-auto cursor-pointer opacity-0 group-hover/item:opacity-100"
                 hx-delete={`/todos/${id}`}
                 hx-swap="outerHTML"
                 hx-target="closest div"
-            ></i>
+            />
         </div>
     );
 }
