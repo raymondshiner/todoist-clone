@@ -26,7 +26,7 @@ const app = new Elysia()
         html(
             <BaseHtml>
                 <body
-                    class="flex w-full h-screen justify-center items-center"
+                    class="flex w-full h-screen justify-center items-center bg-[#1E1E1E] text-white"
                     hx-get="/todos"
                     hx-swap="innerHTML"
                     hx-trigger="load"
