@@ -1,10 +1,24 @@
 import { html } from "@elysiajs/html";
-import { eq } from "drizzle-orm";
 import { Elysia, t } from "elysia";
 import * as elements from "typed-html";
-import { BaseHtml } from "./BaseHtml";
-import { db } from "./db";
-import { Todo, todos } from "./db/schema";
+import {
+    createNewTodo,
+    deleteTodoItem,
+    getAllTodos,
+    updateTodoItem,
+} from "./operations";
+
+const idParams = {
+    params: t.Object({
+        id: t.Numeric(),
+    }),
+};
+
+const bodyParams = {
+    body: t.Object({
+        content: t.String({ minLength: 1 }),
+    }),
+};
 
 const app = new Elysia()
     .use(html())
@@ -20,109 +34,29 @@ const app = new Elysia()
             </BaseHtml>
         )
     )
-    .get("/todos", async () => {
-        const data = await db.select().from(todos).all();
-        return <TodoList todos={data} />;
-    })
-    .post(
-        "/todos/toggle/:id",
-        async ({ params }) => {
-            const oldTodo = await db
-                .select()
-                .from(todos)
-                .where(eq(todos.id, params.id))
-                .get();
-            const newTodo = await db
-                .update(todos)
-                .set({ completed: !oldTodo.completed })
-                .where(eq(todos.id, params.id))
-                .returning()
-                .get();
-            return <TodoItem {...newTodo} />;
-        },
-        {
-            params: t.Object({
-                id: t.Numeric(),
-            }),
-        }
-    )
-    .delete(
-        "/todos/:id",
-        async ({ params }) => {
-            await db.delete(todos).where(eq(todos.id, params.id)).run();
-        },
-        {
-            params: t.Object({
-                id: t.Numeric(),
-            }),
-        }
-    )
-    .post(
-        "/todos",
-        async ({ body }) => {
-            const newTodo = await db
-                .insert(todos)
-                .values(body)
-                .returning()
-                .get();
-            return <TodoItem {...newTodo} />;
-        },
-        {
-            body: t.Object({
-                content: t.String({ minLength: 1 }),
-            }),
-        }
-    )
+    .get("/todos", getAllTodos)
+    .post("/todos/toggle/:id", updateTodoItem, idParams)
+    .delete("/todos/:id", deleteTodoItem, idParams)
+    .post("/todos", createNewTodo, bodyParams)
     .listen({ port: 3000 });
 
 console.log(
     `🦊 Elysia is running at http://${app.server?.hostname}:${app.server?.port}`
 );
 
-function TodoItem({ content, completed, id }: Todo) {
-    return (
-        <div class="flex flex-row space-x-3">
-            <p>{content}</p>
-            <input
-                type="checkbox"
-                checked={completed}
-                hx-post={`/todos/toggle/${id}`}
-                hx-swap="outerHTML"
-                hx-target="closest div"
-            />
-            <button
-                class="text-red-500"
-                hx-delete={`/todos/${id}`}
-                hx-swap="outerHTML"
-                hx-target="closest div"
-            >
-                X
-            </button>
-        </div>
-    );
-}
+const BaseHtml = ({ children }: elements.Children) => `
+<!DOCTYPE html>
+<html lang="en">
 
-function TodoList({ todos }: { todos: Todo[] }) {
-    return (
-        <div>
-            {todos.map((todo) => (
-                <TodoItem {...todo} />
-            ))}
-            <TodoForm />
-        </div>
-    );
-}
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Todoist Clone</title>
+  <link rel="icon" href="https://d3ptyyxy2at9ui.cloudfront.net/favicon-a85885.ico">  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/htmx.org@1.9.3"></script>
+  <script src="https://unpkg.com/hyperscript.org@0.9.9"></script>
+</head>
 
-function TodoForm() {
-    return (
-        <form
-            class="flex flex-row space-x-3"
-            hx-post="/todos"
-            hx-swap="beforebegin"
-            _="on submit target.reset()"
-        >
-            <input type="text" name="content" class="border border-black" />
-            <button type="submit">Add</button>
-        </form>
-    );
-}
+${children}
+`;
