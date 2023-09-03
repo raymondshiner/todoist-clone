@@ -56,6 +56,7 @@ const BaseHtml = ({ children }: elements.Children) => `
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/htmx.org@1.9.3"></script>
   <script src="https://unpkg.com/hyperscript.org@0.9.9"></script>
+  <script src="https://kit.fontawesome.com/a54e17b247.js" crossorigin="anonymous"></script>
 </head>
 
 ${children}
